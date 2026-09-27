@@ -5,11 +5,7 @@ desktop.ini
 
 # Temporary files & logs
 *.log
-scratch/
 tmp/
-
-# Sub-working directory (keep root clean)
-dog-breed-classifier/
 
 # IDE / Editor files
 .vscode/
