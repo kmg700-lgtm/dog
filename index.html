@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PawMatch AI - 인공지능 반려견 품종 분류기</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐶</text></svg>">
+
+  <!-- Google Fonts: Pretendard & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Tailwind CSS CDN with Custom Theme Config -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Pretendard', 'Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#fffbeb',
+              100: '#fef3c7',
+              200: '#fde68a',
+              300: '#fcd34d',
+              400: '#fbbf24',
+              500: '#f59e0b',
+              600: '#d97706',
+              700: '#b45309',
+              800: '#92400e',
+              900: '#78350f',
+            },
+            cream: {
+              50: '#fdfbf7',
+              100: '#f9f6f0',
+              200: '#f3ece1',
+              300: '#e8dcce',
+            }
+          },
+          animation: {
+            'bounce-soft': 'bounceSoft 2s infinite ease-in-out',
+            'pulse-subtle': 'pulseSubtle 2.5s infinite ease-in-out',
+          },
+          keyframes: {
+            bounceSoft: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-6px)' },
+            },
+            pulseSubtle: {
+              '0%, 100%': { opacity: '1' },
+              '50%': { opacity: '0.6' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- TensorFlow.js & Teachable Machine Image Official Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+  <style>
+    /* Smooth scrollbar and transitions */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #fdfbf7;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #d8c7b5;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #bfa68f;
+    }
+    .custom-gradient-bg {
+      background: radial-gradient(circle at top right, rgba(254, 243, 199, 0.45), transparent 40%),
+                  radial-gradient(circle at bottom left, rgba(253, 230, 138, 0.3), transparent 45%),
+                  #fdfbf7;
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(229, 219, 203, 0.55);
+    }
+    .preview-scanner-line {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #f59e0b, #d97706, transparent);
+      box-shadow: 0 0 12px #f59e0b;
+      animation: scan 2.2s ease-in-out infinite alternate;
+    }
+    @keyframes scan {
+      0% { top: 4%; }
+      100% { top: 96%; }
+    }
+  </style>
+</head>
+<body class="custom-gradient-bg min-h-screen text-slate-800 antialiased selection:bg-brand-200 selection:text-brand-900 flex flex-col justify-between">
+
+  <!-- Top Navigation Bar -->
+  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-amber-100 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-18 py-3 flex items-center justify-between">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-brand-500 to-amber-300 flex items-center justify-center text-white shadow-md shadow-brand-500/20 text-xl transform hover:scale-105 transition-transform duration-300">
+          <i class="fa-solid fa-paw"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-amber-900 via-brand-700 to-amber-600 bg-clip-text text-transparent">PawMatch AI</span>
+            <span class="px-2 py-0.5 text-[11px] font-bold bg-brand-100 text-brand-800 rounded-full border border-brand-200">v2.0 Pro</span>
+          </div>
+          <p class="text-xs text-slate-500 hidden sm:block">Teachable Machine 반려견 10대 품종 AI 분류기</p>
+        </div>
+      </div>
+
+      <!-- Header Action Items -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Model Status Pill -->
+        <div id="modelStatusBadge" class="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200 transition-all duration-300">
+          <span class="relative flex h-2.5 w-2.5">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
+          </span>
+          <span id="modelStatusText">모델 로딩 중...</span>
+        </div>
+
+        <!-- Model Settings Toggle Button -->
+        <button id="toggleSettingsBtn" class="p-2.5 rounded-xl border border-slate-200 bg-white hover:bg-amber-50 hover:border-amber-300 text-slate-600 hover:text-brand-700 shadow-sm transition-all duration-200 flex items-center gap-1.5 text-xs font-medium" title="모델 URL 설정 열기">
+          <i class="fa-solid fa-sliders text-sm"></i>
+          <span class="hidden md:inline">모델 설정</span>
+        </button>
+
+        <!-- Breed Directory Modal Button -->
+        <button id="openBreedListBtn" class="p-2.5 rounded-xl border border-brand-200 bg-brand-50 hover:bg-brand-100 text-brand-800 shadow-sm transition-all duration-200 flex items-center gap-1.5 text-xs font-semibold">
+          <i class="fa-solid fa-book-open text-sm"></i>
+          <span class="hidden sm:inline">10대 견종 도감</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 w-full flex-grow">
+
+    <!-- Model Config Collapsible Section -->
+    <div id="modelSettingsSection" class="hidden mb-6 bg-white rounded-2xl border border-amber-200/80 p-5 shadow-lg shadow-amber-900/5 transition-all">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+        <div>
+          <h2 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-brain text-brand-600"></i> Teachable Machine 모델 URL 설정
+          </h2>
+          <p class="text-xs text-slate-500 mt-0.5">Google Teachable Machine에서 학습 후 공유한 모델 링크를 입력하세요.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="resetDefaultModelBtn" class="text-xs px-2.5 py-1 text-slate-500 hover:text-brand-700 bg-slate-100 hover:bg-amber-50 rounded-lg transition-colors">
+            기본 모델로 초기화
+          </button>
+        </div>
+      </div>
+
+      <div class="mt-4 flex flex-col sm:flex-row gap-2.5">
+        <div class="relative flex-grow">
+          <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+            <i class="fa-solid fa-link text-xs"></i>
+          </div>
+          <input 
+            type="url" 
+            id="modelUrlInput" 
+            value="https://teachablemachine.withgoogle.com/models/DqNbyXGwg/" 
+            placeholder="https://teachablemachine.withgoogle.com/models/..." 
+            class="w-full pl-9 pr-4 py-2.5 text-xs sm:text-sm rounded-xl border border-slate-300 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 outline-none transition font-mono bg-slate-50/50"
+          >
+        </div>
+        <button 
+          id="loadModelBtn" 
+          class="px-5 py-2.5 bg-gradient-to-r from-brand-600 to-amber-500 hover:from-brand-700 hover:to-amber-600 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-md shadow-brand-500/25 transition-all flex items-center justify-center gap-2 flex-shrink-0"
+        >
+          <i class="fa-solid fa-arrows-rotate"></i>
+          <span>모델 다시 불러오기</span>
+        </button>
+      </div>
+
+      <!-- Loaded Model Meta Chips -->
+      <div id="modelLabelsInfo" class="mt-3.5 pt-3 border-t border-slate-100 flex flex-wrap items-center gap-2 text-xs text-slate-600">
+        <span class="font-semibold text-slate-700"><i class="fa-solid fa-tags text-brand-500 mr-1"></i>인식 가능 품종 (10종):</span>
+        <div id="labelsChipList" class="flex flex-wrap gap-1.5">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Hero Title Banner -->
+    <div class="text-center mb-8 pt-2">
+      <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-brand-100/80 text-brand-900 border border-brand-200 mb-3 shadow-xs">
+        <i class="fa-solid fa-sparkles text-amber-500"></i> AI 심층 비전 기술 탑재
+      </span>
+      <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight">
+        사진 한 장으로 알아보는 <span class="bg-gradient-to-r from-brand-600 via-amber-600 to-yellow-600 bg-clip-text text-transparent">우리 댕댕이 견종</span>
+      </h1>
+      <p class="mt-3 text-slate-600 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
+        골든 리트리버, 푸들, 비숑, 말티즈, 진돗개 등 10대 대표 품종을 실시간으로 분석합니다.<br class="hidden sm:block">
+        사진을 직접 업로드하거나 웹캠으로 지금 바로 귀여운 강아지를 비춰보세요!
+      </p>
+    </div>
+
+    <!-- Main Workspace Grid (Left: Media Input / Right: AI Analysis Results) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+      <!-- LEFT COLUMN: Input Mode (Upload / Webcam) -->
+      <div class="lg:col-span-6 space-y-4">
+        <div class="glass-card rounded-3xl p-5 sm:p-6 shadow-xl shadow-amber-900/5 transition-all">
+          
+          <!-- Mode Tabs -->
+          <div class="flex items-center justify-between p-1 bg-amber-50/70 border border-amber-200/60 rounded-2xl mb-5">
+            <button id="tabUploadBtn" class="flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all duration-200 bg-white text-brand-800 shadow-sm">
+              <i class="fa-solid fa-cloud-arrow-up text-brand-600"></i>
+              <span>사진 업로드</span>
+            </button>
+            <button id="tabWebcamBtn" class="flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 text-slate-600 hover:text-brand-800">
+              <i class="fa-solid fa-video text-slate-400"></i>
+              <span>실시간 웹캠</span>
+            </button>
+          </div>
+
+          <!-- TAB 1 CONTENT: File Upload Area -->
+          <div id="uploadView" class="space-y-4">
+            
+            <!-- Drag & Drop Zone -->
+            <div 
+              id="dropZone" 
+              class="relative border-2 border-dashed border-amber-300 hover:border-brand-500 bg-amber-50/30 hover:bg-amber-50/60 rounded-2xl p-6 sm:p-8 text-center cursor-pointer transition-all duration-200 flex flex-col items-center justify-center min-h-[300px]"
+            >
+              <input type="file" id="fileInput" accept="image/*" class="hidden">
+              
+              <!-- Placeholder State (Before image selection) -->
+              <div id="dropPlaceholder" class="flex flex-col items-center justify-center">
+                <div class="w-18 h-18 sm:w-20 sm:h-20 mb-4 rounded-full bg-gradient-to-tr from-amber-100 to-brand-100 border border-amber-200 flex items-center justify-center text-brand-600 shadow-inner group-hover:scale-105 transition-transform">
+                  <i class="fa-solid fa-dog text-3xl sm:text-4xl animate-bounce-soft"></i>
+                </div>
+                <h3 class="text-base sm:text-lg font-bold text-slate-800 mb-1">
+                  강아지 사진을 이곳에 끌어다 놓으세요
+                </h3>
+                <p class="text-xs sm:text-sm text-slate-500 mb-4">
+                  또는 여기를 클릭하여 컴퓨터에서 파일을 선택하세요
+                </p>
+                <div class="flex items-center gap-2 text-[11px] text-slate-400 bg-white px-3 py-1 rounded-full border border-slate-200">
+                  <i class="fa-regular fa-image"></i> JPG, PNG, WEBP, HEIC 지원
+                </div>
+              </div>
+
+              <!-- Preview State (After image loaded) -->
+              <div id="previewContainer" class="hidden w-full relative group">
+                <div class="relative w-full max-h-[360px] overflow-hidden rounded-xl bg-slate-900 flex items-center justify-center shadow-inner">
+                  <img id="imagePreview" src="" alt="강아지 미리보기" class="w-full h-auto max-h-[360px] object-contain mx-auto">
+                  
+                  <!-- Scanning effect during prediction -->
+                  <div id="imageScanner" class="hidden preview-scanner-line"></div>
+                </div>
+
+                <!-- Preview Controls Overlay -->
+                <div class="mt-3 flex items-center justify-between gap-2">
+                  <button id="changeImageBtn" type="button" class="text-xs font-semibold px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 rounded-lg border border-slate-200 shadow-xs transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-arrow-rotate-left"></i> 다른 사진 선택
+                  </button>
+                  <button id="reanalyzeBtn" type="button" class="text-xs font-semibold px-3 py-1.5 bg-brand-500 hover:bg-brand-600 text-white rounded-lg shadow-sm transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-sparkles"></i> 다시 분석
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Quick Demo Sample Images -->
+            <div class="pt-2">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
+                  <i class="fa-regular fa-lightbulb text-amber-500"></i> 샘플 사진으로 빠른 체험하기
+                </span>
+                <span class="text-[11px] text-slate-400">클릭 즉시 AI 분석</span>
+              </div>
+              <div class="grid grid-cols-4 sm:grid-cols-5 gap-2">
+                <!-- Sample 1: Retriever -->
+                <button type="button" class="sample-btn group text-left p-1.5 rounded-xl border border-amber-100 bg-white hover:border-brand-400 hover:shadow-md transition-all" data-src="https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=600&q=80" data-label="골든 리트리버">
+                  <img src="https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=200&q=80" alt="골든 리트리버" class="w-full h-14 object-cover rounded-lg mb-1 group-hover:scale-102 transition">
+                  <p class="text-[11px] font-bold text-slate-700 truncate text-center">리트리버</p>
+                </button>
+                <!-- Sample 2: Poodle -->
+                <button type="button" class="sample-btn group text-left p-1.5 rounded-xl border border-amber-100 bg-white hover:border-brand-400 hover:shadow-md transition-all" data-src="https://images.unsplash.com/photo-1591769225440-811ad7d6eab2?auto=format&fit=crop&w=600&q=80" data-label="푸들">
+                  <img src="https://images.unsplash.com/photo-1591769225440-811ad7d6eab2?auto=format&fit=crop&w=200&q=80" alt="푸들" class="w-full h-14 object-cover rounded-lg mb-1 group-hover:scale-102 transition">
+                  <p class="text-[11px] font-bold text-slate-700 truncate text-center">푸들</p>
+                </button>
+                <!-- Sample 3: Bichon -->
+                <button type="button" class="sample-btn group text-left p-1.5 rounded-xl border border-amber-100 bg-white hover:border-brand-400 hover:shadow-md transition-all" data-src="https://images.unsplash.com/photo-1608096299210-db7e38487075?auto=format&fit=crop&w=600&q=80" data-label="비숑 프리제">
+                  <img src="https://images.unsplash.com/photo-1608096299210-db7e38487075?auto=format&fit=crop&w=200&q=80" alt="비숑 프리제" class="w-full h-14 object-cover rounded-lg mb-1 group-hover:scale-102 transition">
+                  <p class="text-[11px] font-bold text-slate-700 truncate text-center">비숑 프리제</p>
+                </button>
+                <!-- Sample 4: Maltese -->
+                <button type="button" class="sample-btn group text-left p-1.5 rounded-xl border border-amber-100 bg-white hover:border-brand-400 hover:shadow-md transition-all" data-src="https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&w=600&q=80" data-label="말티즈">
+                  <img src="https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&w=200&q=80" alt="말티즈" class="w-full h-14 object-cover rounded-lg mb-1 group-hover:scale-102 transition">
+                  <p class="text-[11px] font-bold text-slate-700 truncate text-center">말티즈</p>
+                </button>
+                <!-- Sample 5: Bulldog -->
+                <button type="button" class="sample-btn group text-left p-1.5 rounded-xl border border-amber-100 bg-white hover:border-brand-400 hover:shadow-md transition-all hidden sm:block" data-src="https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&w=600&q=80" data-label="불독">
+                  <img src="https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&w=200&q=80" alt="불독" class="w-full h-14 object-cover rounded-lg mb-1 group-hover:scale-102 transition">
+                  <p class="text-[11px] font-bold text-slate-700 truncate text-center">불독</p>
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- TAB 2 CONTENT: Webcam Live View -->
+          <div id="webcamView" class="hidden space-y-4">
+            <div class="relative bg-slate-900 rounded-2xl overflow-hidden min-h-[320px] flex items-center justify-center border border-amber-200">
+              
+              <!-- Video Placeholder before camera start -->
+              <div id="webcamPlaceholder" class="p-8 text-center text-slate-400 flex flex-col items-center">
+                <div class="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center mb-3 text-slate-400 text-2xl">
+                  <i class="fa-solid fa-video-slash"></i>
+                </div>
+                <h4 class="text-sm font-semibold text-slate-200 mb-1">웹캠이 꺼져 있습니다</h4>
+                <p class="text-xs text-slate-400 mb-4 max-w-xs">카메라를 켜면 실시간으로 화면 속 반려견의 품종을 추론합니다.</p>
+                <button id="startWebcamBtn" class="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white rounded-xl text-xs font-bold shadow-md shadow-brand-500/30 transition flex items-center gap-2">
+                  <i class="fa-solid fa-play"></i> 카메라 켜기
+                </button>
+              </div>
+
+              <!-- Real Webcam Canvas / Video Container -->
+              <div id="webcamCanvasWrapper" class="hidden w-full h-full relative flex items-center justify-center">
+                <!-- TM Image WebCam element is injected here -->
+                <div id="webcamContainer" class="relative overflow-hidden rounded-xl"></div>
+                
+                <!-- Live Indicator Tag -->
+                <div class="absolute top-3 left-3 bg-red-600/90 backdrop-blur-sm text-white px-2.5 py-1 rounded-full text-[10px] font-extrabold flex items-center gap-1.5 shadow-md">
+                  <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span> LIVE 실시간 감지 중
+                </div>
+
+                <!-- Live Scanner line -->
+                <div class="preview-scanner-line opacity-75"></div>
+              </div>
+
+            </div>
+
+            <!-- Webcam Controls Bar -->
+            <div id="webcamControlsBar" class="hidden flex items-center justify-between gap-2 p-3 bg-amber-50 rounded-xl border border-amber-200">
+              <div class="flex items-center gap-2">
+                <button id="toggleCameraStreamBtn" class="px-3.5 py-2 rounded-lg text-xs font-bold bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 shadow-xs transition flex items-center gap-1.5">
+                  <i class="fa-solid fa-pause text-amber-600"></i> <span id="streamStateLabel">일시정지</span>
+                </button>
+                <button id="flipCameraBtn" class="px-3 py-2 rounded-lg text-xs font-medium bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 shadow-xs transition flex items-center gap-1.5">
+                  <i class="fa-solid fa-camera-rotate"></i> <span class="hidden sm:inline">화면 반전</span>
+                </button>
+              </div>
+              <button id="stopWebcamBtn" class="px-3.5 py-2 rounded-lg text-xs font-bold bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 transition flex items-center gap-1.5">
+                <i class="fa-solid fa-power-off"></i> 카메라 종료
+              </button>
+            </div>
+
+            <div class="text-[11px] text-slate-500 bg-amber-50/70 p-3 rounded-xl border border-amber-200/50 flex items-start gap-2">
+              <i class="fa-solid fa-circle-info text-amber-600 mt-0.5"></i>
+              <span>웹캠이 켜져 있는 동안 약 100ms 간격으로 실시간 AI 추론이 진행됩니다. 조명이 밝고 강아지의 얼굴과 전신이 잘 보이는 각도일수록 정확도가 높아집니다.</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: AI Prediction & Breed Intelligence -->
+      <div class="lg:col-span-6 space-y-4">
+        
+        <!-- INITIAL EMPTY STATE (Before prediction) -->
+        <div id="emptyResultCard" class="glass-card rounded-3xl p-8 text-center shadow-xl shadow-amber-900/5 min-h-[420px] flex flex-col items-center justify-center">
+          <div class="w-20 h-20 rounded-full bg-amber-100/70 border border-amber-200 flex items-center justify-center text-amber-700 text-3xl mb-4 shadow-sm animate-pulse-subtle">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+          </div>
+          <h3 class="text-lg font-bold text-slate-800 mb-2">AI 분석 준비 완료</h3>
+          <p class="text-xs sm:text-sm text-slate-500 max-w-sm mb-6 leading-relaxed">
+            왼쪽에서 강아지 사진을 업로드하거나 웹캠을 켜면, 모델이 10개 품종 확률을 정밀 계산하여 여기에 표시합니다.
+          </p>
+          <div class="grid grid-cols-2 gap-3 w-full max-w-xs text-left">
+            <div class="p-3 bg-amber-50/60 rounded-xl border border-amber-200/60">
+              <p class="text-[11px] text-amber-800 font-semibold mb-0.5">🐾 1위 견종 식별</p>
+              <p class="text-[10px] text-slate-500">최고 확률 품종과 특성 카드 안내</p>
+            </div>
+            <div class="p-3 bg-amber-50/60 rounded-xl border border-amber-200/60">
+              <p class="text-[11px] text-amber-800 font-semibold mb-0.5">📊 10대 품종 확률</p>
+              <p class="text-[10px] text-slate-500">상위 예측 순위별 프로그레스 바</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ACTIVE RESULT CONTAINER (Shown after prediction) -->
+        <div id="activeResultCard" class="hidden space-y-4">
+          
+          <!-- Top Rank Spotlight Card -->
+          <div class="glass-card rounded-3xl p-6 shadow-xl shadow-amber-900/10 border-2 border-brand-300 relative overflow-hidden">
+            <!-- Decorative Accent Background -->
+            <div class="absolute -top-12 -right-12 w-40 h-40 bg-gradient-to-br from-amber-200/40 to-brand-300/30 rounded-full blur-2xl pointer-events-none"></div>
+
+            <!-- Top Row: Badge & Confidence -->
+            <div class="flex items-center justify-between mb-4 relative z-10">
+              <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-gradient-to-r from-brand-600 to-amber-500 text-white shadow-sm">
+                <i class="fa-solid fa-crown text-yellow-200"></i> AI 1순위 예측 품종
+              </div>
+              <div class="text-right">
+                <div class="flex items-baseline gap-1">
+                  <span id="topProbabilityValue" class="text-3xl sm:text-4xl font-black bg-gradient-to-r from-brand-700 to-amber-600 bg-clip-text text-transparent">98.5</span>
+                  <span class="text-sm font-extrabold text-amber-600">%</span>
+                </div>
+                <p class="text-[10px] font-medium text-slate-400">일치 확률 (Confidence)</p>
+              </div>
+            </div>
+
+            <!-- Middle Row: Breed Name, Emoji & Tagline -->
+            <div class="flex items-start gap-4 mb-4 relative z-10">
+              <div id="topBreedEmojiBox" class="w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-gradient-to-tr from-amber-100 to-brand-100 border border-brand-200 flex items-center justify-center text-3xl sm:text-4xl flex-shrink-0 shadow-inner">
+                🐶
+              </div>
+              <div class="flex-grow">
+                <div class="flex items-baseline gap-2 flex-wrap">
+                  <h2 id="topBreedKoName" class="text-2xl sm:text-3xl font-extrabold text-slate-900">골든 리트리버</h2>
+                  <span id="topBreedEnName" class="text-xs sm:text-sm font-semibold text-slate-500">Golden Retriever</span>
+                </div>
+                <p id="topBreedTagline" class="text-xs sm:text-sm text-brand-800 font-semibold mt-1">
+                  "사람을 너무 사랑하는 인절미 천사견"
+                </p>
+                <!-- Trait Hashtags -->
+                <div id="topBreedTags" class="flex flex-wrap gap-1.5 mt-2.5">
+                  <span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-100/80 text-amber-900">#온순함</span>
+                  <span class="px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-100/80 text-amber-900">#대형견</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Breed Characteristics Detail Box -->
+            <div class="p-4 bg-amber-50/70 rounded-2xl border border-amber-200/70 text-xs text-slate-700 space-y-2 relative z-10">
+              <p id="topBreedDescription" class="leading-relaxed">
+                매우 다정하고 지능이 뛰어나며 친화력이 발군입니다. 안내견이나 치료견으로도 널리 활약합니다.
+              </p>
+              
+              <!-- Quick Stats Metrics -->
+              <div class="grid grid-cols-3 gap-2 pt-2 border-t border-amber-200/50 text-center">
+                <div class="p-1.5 rounded-lg bg-white/80">
+                  <span class="text-[10px] text-slate-400 block font-medium">크기/체급</span>
+                  <span id="statSize" class="text-xs font-bold text-slate-800">대형견</span>
+                </div>
+                <div class="p-1.5 rounded-lg bg-white/80">
+                  <span class="text-[10px] text-slate-400 block font-medium">활동량 (에너지)</span>
+                  <span id="statEnergy" class="text-xs font-bold text-slate-800">높음 (High)</span>
+                </div>
+                <div class="p-1.5 rounded-lg bg-white/80">
+                  <span class="text-[10px] text-slate-400 block font-medium">털 빠짐</span>
+                  <span id="statShedding" class="text-xs font-bold text-slate-800">보통~많음</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- All / Top 5 Probability Breakdown Chart -->
+          <div class="glass-card rounded-3xl p-6 shadow-xl shadow-amber-900/5">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                <i class="fa-solid fa-chart-simple text-brand-600"></i> 품종별 예측 확률 순위
+              </h3>
+              <span class="text-[11px] text-slate-400">Teachable Machine Softmax</span>
+            </div>
+
+            <!-- Dynamic Progress Bars List -->
+            <div id="probabilityBarsList" class="space-y-3">
+              <!-- Dynamically rendered via JS -->
+            </div>
+          </div>
+
+          <!-- Share & Re-test Actions -->
+          <div class="flex items-center gap-3">
+            <button id="copyResultBtn" class="flex-1 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-amber-50 text-slate-700 hover:text-brand-800 text-xs font-bold shadow-sm transition flex items-center justify-center gap-1.5">
+              <i class="fa-regular fa-copy"></i> 분석 결과 복사하기
+            </button>
+            <button id="celebrateBtn" class="py-2.5 px-4 rounded-xl border border-amber-300 bg-amber-100/70 hover:bg-amber-200 text-brand-900 text-xs font-bold shadow-sm transition flex items-center justify-center gap-1.5" title="축하 꽃가루 발사">
+              🎉 축하하기
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- 10 Breeds Encyclopedia Modal (견종 도감 모달) -->
+  <div id="breedModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-4xl max-h-[85vh] rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-amber-200 animate-fadeIn">
+      
+      <!-- Modal Header -->
+      <div class="px-6 py-4 border-b border-amber-100 flex items-center justify-between bg-amber-50/50">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-brand-500 text-white flex items-center justify-center shadow-sm">
+            <i class="fa-solid fa-book-open"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-slate-900">학습 모델 10대 반려견 품종 도감</h3>
+            <p class="text-xs text-slate-500">인공지능 모델이 구분할 수 있는 10개 강아지 품종의 상세 정보입니다.</p>
+          </div>
+        </div>
+        <button id="closeBreedModalBtn" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-sm transition">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body (Grid of 10 Breeds) -->
+      <div class="p-6 overflow-y-auto space-y-4">
+        <div id="modalBreedGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Populated via JS -->
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="px-6 py-3.5 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
+        <span class="text-xs text-slate-400">모델 라벨: bichon, bordercoli, buldog, jindo, maltese, poodle, retriever, schnauzer, sitzu, yorkshire</span>
+        <button id="closeBreedModalBtn2" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-xl transition">
+          닫기
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-2 px-4 py-3 rounded-2xl shadow-xl text-xs font-bold text-white bg-slate-900 border border-slate-700">
+    <i id="toastIcon" class="fa-solid fa-circle-check text-brand-400"></i>
+    <span id="toastMsg">알림 메시지</span>
+  </div>
+
+  <!-- Footer -->
+  <footer class="mt-12 py-6 border-t border-amber-100 bg-white/50 text-center text-xs text-slate-500">
+    <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <span class="font-bold text-brand-800">PawMatch AI</span>
+        <span>•</span>
+        <span>Powered by Google Teachable Machine & TensorFlow.js</span>
+      </div>
+      <div class="text-[11px] text-slate-400">
+        반려견 이미지 분석 모델 (10 Classes Classification) • 프론트엔드 완벽 호환
+      </div>
+    </div>
+  </footer>
+
+  <!-- ======================================================== -->
+  <!-- JAVASCRIPT APPLICATION LOGIC                            -->
+  <!-- ======================================================== -->
+  <script>
+    /**
+     * PawMatch AI - Comprehensive Dog Breed Database
+     * Maps Teachable Machine label outputs to rich Korean/English breed information
+     */
+    const BREED_DATABASE = {
+      // 1. Bichon Frise (bichon)
+      "bichon": {
+        id: "bichon",
+        koName: "비숑 프리제",
+        enName: "Bichon Frise",
+        emoji: "🐩",
+        tagline: "동글동글 사랑스러운 솜사탕 하이바의 주인공",
+        description: "프랑스 원산의 소형견으로 명랑하고 애교가 넘칩니다. 곱슬거리는 흰 털과 특유의 헬멧(하이바) 미용으로 유명하며, 털 빠짐이 적고 활발한 성격입니다.",
+        tags: ["#솜사탕미용", "#애교만점", "#털빠짐적음", "#소형견"],
+        size: "소형견 (3~5kg)",
+        energy: "보통~높음",
+        shedding: "매우 적음",
+        accentColor: "from-amber-400 to-yellow-300"
+      },
+      // 2. Border Collie (bordercoli)
+      "bordercoli": {
+        id: "bordercoli",
+        koName: "보더콜리",
+        enName: "Border Collie",
+        emoji: "🐕‍🦺",
+        tagline: "전 견종 지능 순위 당당한 1위의 천재견",
+        description: "목양견 출신으로 믿기 힘들 만큼 뛰어난 두뇌와 끝없는 에너지를 자랑합니다. 프리스비나 어질리티 등 두뇌 회전과 스포츠 활동을 매우 즐깁니다.",
+        tags: ["#지능1위", "#활동량최강", "#어질리티달인", "#중형견"],
+        size: "중형견 (14~20kg)",
+        energy: "매우 높음 (Super)",
+        shedding: "보통~많음",
+        accentColor: "from-slate-700 to-amber-700"
+      },
+      // 3. Bulldog (buldog)
+      "buldog": {
+        id: "buldog",
+        koName: "불독",
+        enName: "Bulldog",
+        emoji: "🐶",
+        tagline: "듬직한 외모 속 숨겨진 순둥이 반전 매력",
+        description: "주름진 얼굴과 단단하고 다부진 체형이 매력적인 품종입니다. 겉보기와 달리 성격이 아주 온순하고 느긋하며 사람을 잘 따르는 대표적인 힐링견입니다.",
+        tags: ["#순둥이", "#매력만점주름", "#느긋한성격", "#중형견"],
+        size: "중형견 (18~23kg)",
+        energy: "낮음 (Chill)",
+        shedding: "보통",
+        accentColor: "from-amber-600 to-stone-500"
+      },
+      // 4. Jindo Dog (jindo)
+      "jindo": {
+        id: "jindo",
+        koName: "진돗개",
+        enName: "Jindo Dog",
+        emoji: "🐕",
+        tagline: "대한민국 천연기념물 53호, 충성심과 용맹의 상징",
+        description: "한국의 대표 견종으로 주인에 대한 일편단심 충성심과 강한 귀소본능, 깔끔한 성격을 지녔습니다. 영리하고 담대하며 경계심과 의리가 남다릅니다.",
+        tags: ["#대한민국토종견", "#일편단심충성", "#용맹함", "#중형견"],
+        size: "중형견 (15~20kg)",
+        energy: "높음",
+        shedding: "많음 (이중모)",
+        accentColor: "from-amber-500 to-yellow-600"
+      },
+      // 5. Maltese (maltese)
+      "maltese": {
+        id: "maltese",
+        koName: "말티즈",
+        enName: "Maltese",
+        emoji: "🐶",
+        tagline: "새하얀 털과 맑은 눈망울의 국민 반려견",
+        description: "지중해 몰타 섬이 기원인 견종으로 오랜 역사를 자랑하는 귀족 반려견입니다. 활발하고 애교가 많으며 눈치가 빠르고 주인과 깊은 유대감을 형성합니다.",
+        tags: ["#국민반려견", "#새하얀털", "#질투쟁이귀염둥이", "#소형견"],
+        size: "소형견 (2~3.5kg)",
+        energy: "보통",
+        shedding: "적음",
+        accentColor: "from-amber-300 to-yellow-200"
+      },
+      // 6. Poodle (poodle)
+      "poodle": {
+        id: "poodle",
+        koName: "푸들",
+        enName: "Poodle",
+        emoji: "🐩",
+        tagline: "털 빠짐 적고 영리함 2위, 다재다능한 팔방미인",
+        description: "곱슬거리는 털 덕분에 털 빠짐과 알레르기 걱정이 가장 적은 품종 중 하나입니다. 지능이 전 견종 중 2위로 매우 똑똑하여 훈련 습득력이 뛰어납니다.",
+        tags: ["#지능2위", "#털안빠지는개", "#사교성발군", "#소/중형견"],
+        size: "토이(3kg)~스탠다드(20kg+)",
+        energy: "높음",
+        shedding: "거의 없음",
+        accentColor: "from-amber-600 to-amber-400"
+      },
+      // 7. Golden Retriever (retriever)
+      "retriever": {
+        id: "retriever",
+        koName: "골든 리트리버",
+        enName: "Golden Retriever",
+        emoji: "🦮",
+        tagline: "모든 사람에게 친절한 인절미 천사견",
+        description: "황금빛 털과 환한 미소가 매력적인 대형견입니다. 온화하고 인내심이 강해 안내견, 심리치료견으로 널리 활약하며 물놀이와 공놀이를 무척 좋아합니다.",
+        tags: ["#천사견", "#친화력갑", "#인절미댕댕이", "#대형견"],
+        size: "대형견 (27~34kg)",
+        energy: "높음",
+        shedding: "많음",
+        accentColor: "from-amber-500 to-yellow-400"
+      },
+      // 8. Miniature Schnauzer (schnauzer)
+      "schnauzer": {
+        id: "schnauzer",
+        koName: "슈나우저",
+        enName: "Schnauzer",
+        emoji: "🐕",
+        tagline: "근엄한 콧수염과 짙은 눈썹의 매력적인 신사",
+        description: "독일 출신의 견종으로 턱수염과 눈썹 털이 독특한 트레이드마크입니다. 용감하고 호기심이 많으며 튼튼한 체력과 충직한 성품을 가졌습니다.",
+        tags: ["#신사수염", "#용감함", "#잔병치레적음", "#소/중형견"],
+        size: "소형/중형 (6~9kg)",
+        energy: "보통~높음",
+        shedding: "적음",
+        accentColor: "from-stone-600 to-amber-700"
+      },
+      // 9. Shih Tzu (sitzu)
+      "sitzu": {
+        id: "sitzu",
+        koName: "시츄",
+        enName: "Shih Tzu",
+        emoji: "🐶",
+        tagline: "느긋하고 짖음 적은 평화주의자 힐링견",
+        description: "중국 황실에서 사랑받던 견종으로 둥근 얼굴과 큰 눈이 매력적입니다. 성격이 매우 둥글둥글하고 온순하며 공격성이 낮아 초보 반려인에게 안성맞춤입니다.",
+        tags: ["#평화주의견", "#느긋한성격", "#초보추천", "#소형견"],
+        size: "소형견 (4~7kg)",
+        energy: "낮음 (Gentle)",
+        shedding: "적음",
+        accentColor: "from-amber-600 to-yellow-500"
+      },
+      // 10. Yorkshire Terrier (yorkshire)
+      "yorkshire": {
+        id: "yorkshire",
+        koName: "요크셔 테리어",
+        enName: "Yorkshire Terrier",
+        emoji: "🐕",
+        tagline: "반짝이는 실크 코트와 당찬 성격의 움직이는 보석",
+        description: "영국 요크셔 지방 출신의 초소형견으로 비단결 같은 털을 자랑합니다. 작은 체구에도 불구하고 테리어 특유의 당당함과 당찬 총명함, 충성심을 보여줍니다.",
+        tags: ["#움직이는보석", "#실크코트", "#당찬매력", "#초소형견"],
+        size: "초소형견 (2~3.2kg)",
+        energy: "보통",
+        shedding: "매우 적음",
+        accentColor: "from-amber-700 to-yellow-600"
+      }
+    };
+
+    /**
+     * Fallback Breed Info when user tests other classes or custom models
+     */
+    function getBreedInfo(rawLabel) {
+      if (!rawLabel) return null;
+      const normalized = rawLabel.toLowerCase().trim().replace(/[\s\-_]/g, '');
+      
+      // Direct key match
+      if (BREED_DATABASE[normalized]) return BREED_DATABASE[normalized];
+
+      // Fuzzy / partial search in keys and names
+      for (const [key, data] of Object.entries(BREED_DATABASE)) {
+        if (normalized.includes(key) || key.includes(normalized) || 
+            normalized.includes(data.koName.replace(/\s/g, '')) || 
+            normalized.includes(data.enName.toLowerCase().replace(/\s/g, ''))) {
+          return data;
+        }
+      }
+
+      // Default generated metadata for unknown/custom labels
+      return {
+        id: rawLabel,
+        koName: rawLabel,
+        enName: rawLabel,
+        emoji: "🐶",
+        tagline: "인공지능 모델이 인식한 품종입니다",
+        description: "Teachable Machine 모델 클래스 라벨입니다.",
+        tags: ["#AI분류", "#반려견", "#TeachableMachine"],
+        size: "정보 수집 중",
+        energy: "보통",
+        shedding: "보통",
+        accentColor: "from-brand-500 to-amber-500"
+      };
+    }
+
+    // ========================================================
+    // APPLICATION STATE & DOM REFERENCES
+    // ========================================================
+    const state = {
+      model: null,
+      maxPredictions: 0,
+      modelUrl: "https://teachablemachine.withgoogle.com/models/DqNbyXGwg/",
+      isModelLoading: false,
+      isPredicting: false,
+      activeTab: "upload", // 'upload' | 'webcam'
+      webcam: null,
+      isWebcamRunning: false,
+      isWebcamPaused: false,
+      webcamFlip: true,
+      lastPredictions: []
+    };
+
+    // DOM Elements
+    const dom = {
+      // Header & Config
+      modelStatusBadge: document.getElementById('modelStatusBadge'),
+      modelStatusText: document.getElementById('modelStatusText'),
+      toggleSettingsBtn: document.getElementById('toggleSettingsBtn'),
+      modelSettingsSection: document.getElementById('modelSettingsSection'),
+      modelUrlInput: document.getElementById('modelUrlInput'),
+      loadModelBtn: document.getElementById('loadModelBtn'),
+      resetDefaultModelBtn: document.getElementById('resetDefaultModelBtn'),
+      labelsChipList: document.getElementById('labelsChipList'),
+      
+      // Tabs
+      tabUploadBtn: document.getElementById('tabUploadBtn'),
+      tabWebcamBtn: document.getElementById('tabWebcamBtn'),
+      uploadView: document.getElementById('uploadView'),
+      webcamView: document.getElementById('webcamView'),
+
+      // Upload Zone
+      dropZone: document.getElementById('dropZone'),
+      fileInput: document.getElementById('fileInput'),
+      dropPlaceholder: document.getElementById('dropPlaceholder'),
+      previewContainer: document.getElementById('previewContainer'),
+      imagePreview: document.getElementById('imagePreview'),
+      imageScanner: document.getElementById('imageScanner'),
+      changeImageBtn: document.getElementById('changeImageBtn'),
+      reanalyzeBtn: document.getElementById('reanalyzeBtn'),
+
+      // Webcam
+      webcamPlaceholder: document.getElementById('webcamPlaceholder'),
+      webcamCanvasWrapper: document.getElementById('webcamCanvasWrapper'),
+      webcamContainer: document.getElementById('webcamContainer'),
+      webcamControlsBar: document.getElementById('webcamControlsBar'),
+      startWebcamBtn: document.getElementById('startWebcamBtn'),
+      toggleCameraStreamBtn: document.getElementById('toggleCameraStreamBtn'),
+      streamStateLabel: document.getElementById('streamStateLabel'),
+      flipCameraBtn: document.getElementById('flipCameraBtn'),
+      stopWebcamBtn: document.getElementById('stopWebcamBtn'),
+
+      // Results
+      emptyResultCard: document.getElementById('emptyResultCard'),
+      activeResultCard: document.getElementById('activeResultCard'),
+      topProbabilityValue: document.getElementById('topProbabilityValue'),
+      topBreedEmojiBox: document.getElementById('topBreedEmojiBox'),
+      topBreedKoName: document.getElementById('topBreedKoName'),
+      topBreedEnName: document.getElementById('topBreedEnName'),
+      topBreedTagline: document.getElementById('topBreedTagline'),
+      topBreedTags: document.getElementById('topBreedTags'),
+      topBreedDescription: document.getElementById('topBreedDescription'),
+      statSize: document.getElementById('statSize'),
+      statEnergy: document.getElementById('statEnergy'),
+      statShedding: document.getElementById('statShedding'),
+      probabilityBarsList: document.getElementById('probabilityBarsList'),
+      copyResultBtn: document.getElementById('copyResultBtn'),
+      celebrateBtn: document.getElementById('celebrateBtn'),
+
+      // Modal & Toast
+      openBreedListBtn: document.getElementById('openBreedListBtn'),
+      breedModal: document.getElementById('breedModal'),
+      modalBreedGrid: document.getElementById('modalBreedGrid'),
+      closeBreedModalBtn: document.getElementById('closeBreedModalBtn'),
+      closeBreedModalBtn2: document.getElementById('closeBreedModalBtn2'),
+      toast: document.getElementById('toast'),
+      toastIcon: document.getElementById('toastIcon'),
+      toastMsg: document.getElementById('toastMsg')
+    };
+
+    // ========================================================
+    // TOAST NOTIFICATIONS
+    // ========================================================
+    let toastTimeout;
+    function showToast(message, type = 'success') {
+      clearTimeout(toastTimeout);
+      dom.toastMsg.innerText = message;
+      
+      if (type === 'error') {
+        dom.toast.className = 'fixed bottom-6 right-6 z-50 transform translate-y-0 opacity-100 transition-all duration-300 flex items-center gap-2 px-4 py-3 rounded-2xl shadow-xl text-xs font-bold text-white bg-red-600 border border-red-500';
+        dom.toastIcon.className = 'fa-solid fa-circle-exclamation text-white';
+      } else if (type === 'info') {
+        dom.toast.className = 'fixed bottom-6 right-6 z-50 transform translate-y-0 opacity-100 transition-all duration-300 flex items-center gap-2 px-4 py-3 rounded-2xl shadow-xl text-xs font-bold text-white bg-slate-900 border border-slate-700';
+        dom.toastIcon.className = 'fa-solid fa-circle-info text-brand-400';
+      } else {
+        dom.toast.className = 'fixed bottom-6 right-6 z-50 transform translate-y-0 opacity-100 transition-all duration-300 flex items-center gap-2 px-4 py-3 rounded-2xl shadow-xl text-xs font-bold text-white bg-emerald-700 border border-emerald-600';
+        dom.toastIcon.className = 'fa-solid fa-circle-check text-white';
+      }
+
+      toastTimeout = setTimeout(() => {
+        dom.toast.classList.remove('translate-y-0', 'opacity-100');
+        dom.toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3500);
+    }
+
+    // ========================================================
+    // TEACHABLE MACHINE MODEL INITIALIZATION & LOADING
+    // ========================================================
+    function normalizeModelUrl(url) {
+      let clean = url.trim();
+      if (!clean) return "";
+      // Strip trailing model.json or metadata.json if user pasted full file path
+      clean = clean.replace(/(model\.json|metadata\.json)$/i, '');
+      if (!clean.endsWith('/')) {
+        clean += '/';
+      }
+      return clean;
+    }
+
+    async function loadTeachableMachineModel(customUrl = null) {
+      const targetUrl = normalizeModelUrl(customUrl || state.modelUrl);
+      if (!targetUrl) {
+        showToast("유효한 모델 URL을 입력해주세요.", "error");
+        return;
+      }
+
+      state.isModelLoading = true;
+      dom.modelStatusBadge.className = 'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200';
+      dom.modelStatusText.innerText = "모델 로딩 중...";
+      dom.loadModelBtn.disabled = true;
+      dom.loadModelBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 로딩 중...';
+
+      try {
+        const modelURL = targetUrl + "model.json";
+        const metadataURL = targetUrl + "metadata.json";
+
+        // Load Teachable Machine model
+        state.model = await tmImage.load(modelURL, metadataURL);
+        state.maxPredictions = state.model.getTotalClasses();
+        state.modelUrl = targetUrl;
+
+        // Update Badge to Success
+        dom.modelStatusBadge.className = 'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200';
+        dom.modelStatusText.innerText = `모델 로드 완료 (${state.maxPredictions}개 품종)`;
+
+        // Render Class Chips
+        renderModelLabelsChips();
+        showToast("AI 모델을 성공적으로 불러왔습니다!", "success");
+
+        // If an image is already showing in upload preview, re-predict
+        if (state.activeTab === 'upload' && dom.imagePreview.src && !dom.previewContainer.classList.contains('hidden')) {
+          predictImage(dom.imagePreview);
+        }
+
+      } catch (err) {
+        console.error("모델 로드 실패:", err);
+        dom.modelStatusBadge.className = 'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-red-50 text-red-800 border border-red-200';
+        dom.modelStatusText.innerText = "모델 로드 실패";
+        showToast("모델을 불러오지 못했습니다. URL과 네트워크를 확인하세요.", "error");
+      } finally {
+        state.isModelLoading = false;
+        dom.loadModelBtn.disabled = false;
+        dom.loadModelBtn.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i> <span>모델 다시 불러오기</span>';
+      }
+    }
+
+    function renderModelLabelsChips() {
+      if (!state.model) return;
+      dom.labelsChipList.innerHTML = '';
+      const total = state.model.getTotalClasses();
+      for (let i = 0; i < total; i++) {
+        const label = state.model.getClassLabels()[i];
+        const info = getBreedInfo(label);
+        const chip = document.createElement('span');
+        chip.className = 'px-2 py-0.5 rounded-md text-[11px] bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-amber-900 border border-slate-200 transition cursor-default';
+        chip.title = `${label} (${info.enName})`;
+        chip.innerHTML = `${info.emoji} <strong>${info.koName}</strong>`;
+        dom.labelsChipList.appendChild(chip);
+      }
+    }
+
+    // ========================================================
+    // PREDICTION RENDERING & UI UPDATES
+    // ========================================================
+    function displayPredictionResults(predictions) {
+      if (!predictions || predictions.length === 0) return;
+
+      // Sort descending by probability
+      const sorted = [...predictions].sort((a, b) => b.probability - a.probability);
+      state.lastPredictions = sorted;
+
+      const top = sorted[0];
+      const topInfo = getBreedInfo(top.className);
+      const topPct = (top.probability * 100).toFixed(1);
+
+      // Hide empty state, reveal active results
+      dom.emptyResultCard.classList.add('hidden');
+      dom.activeResultCard.classList.remove('hidden');
+
+      // Update Spotlight Card
+      dom.topProbabilityValue.innerText = topPct;
+      dom.topBreedEmojiBox.innerText = topInfo.emoji;
+      dom.topBreedKoName.innerText = topInfo.koName;
+      dom.topBreedEnName.innerText = topInfo.enName;
+      dom.topBreedTagline.innerText = `"${topInfo.tagline}"`;
+      dom.topBreedDescription.innerText = topInfo.description;
+      
+      dom.statSize.innerText = topInfo.size;
+      dom.statEnergy.innerText = topInfo.energy;
+      dom.statShedding.innerText = topInfo.shedding;
+
+      // Render tags
+      dom.topBreedTags.innerHTML = '';
+      topInfo.tags.forEach(tag => {
+        const tagSpan = document.createElement('span');
+        tagSpan.className = 'px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-100/90 text-amber-900 border border-amber-200';
+        tagSpan.innerText = tag;
+        dom.topBreedTags.appendChild(tagSpan);
+      });
+
+      // Render All 10 Class Probability Progress Bars
+      dom.probabilityBarsList.innerHTML = '';
+      sorted.forEach((item, index) => {
+        const info = getBreedInfo(item.className);
+        const pct = (item.probability * 100).toFixed(1);
+        const isTop = index === 0;
+
+        const row = document.createElement('div');
+        row.className = `p-2.5 rounded-xl transition-all ${isTop ? 'bg-amber-100/60 border border-amber-300' : 'bg-slate-50/70 border border-slate-100 hover:bg-amber-50/40'}`;
+
+        row.innerHTML = `
+          <div class="flex items-center justify-between text-xs mb-1.5">
+            <div class="flex items-center gap-1.5 truncate">
+              <span class="w-5 text-center font-bold ${isTop ? 'text-amber-700' : 'text-slate-400'}">${index + 1}</span>
+              <span class="text-sm">${info.emoji}</span>
+              <span class="font-bold ${isTop ? 'text-slate-900' : 'text-slate-700'}">${info.koName}</span>
+              <span class="text-[11px] text-slate-400 hidden sm:inline">(${info.enName})</span>
+            </div>
+            <div class="flex items-center gap-1 font-mono">
+              <span class="font-extrabold ${isTop ? 'text-brand-700 text-sm' : 'text-slate-700'}">${pct}%</span>
+            </div>
+          </div>
+          <div class="w-full h-2.5 bg-slate-200/80 rounded-full overflow-hidden">
+            <div 
+              class="h-full rounded-full transition-all duration-700 ease-out ${isTop ? 'bg-gradient-to-r from-brand-500 to-amber-500 shadow-sm' : 'bg-slate-400/80'}"
+              style="width: ${pct}%"
+            ></div>
+          </div>
+        `;
+        dom.probabilityBarsList.appendChild(row);
+      });
+
+      // Confetti effect if top confidence is very high (> 85%) on manual test
+      if (top.probability > 0.85 && state.activeTab === 'upload') {
+        triggerConfetti();
+      }
+    }
+
+    function triggerConfetti() {
+      if (typeof confetti === 'function') {
+        confetti({
+          particleCount: 50,
+          spread: 60,
+          origin: { y: 0.7 },
+          colors: ['#f59e0b', '#d97706', '#fbbf24', '#fef3c7']
+        });
+      }
+    }
+
+    // ========================================================
+    // IMAGE UPLOAD & PREDICTION LOGIC
+    // ========================================================
+    async function predictImage(imgElement) {
+      if (!state.model) {
+        showToast("모델을 먼저 로드하는 중입니다. 잠시만 기다려주세요.", "info");
+        await loadTeachableMachineModel();
+        if (!state.model) return;
+      }
+
+      try {
+        dom.imageScanner.classList.remove('hidden');
+        dom.reanalyzeBtn.disabled = true;
+        dom.reanalyzeBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 분석 중...';
+
+        // TM Image predict accepts HTMLImageElement, HTMLCanvasElement, HTMLVideoElement
+        const predictions = await state.model.predict(imgElement);
+        displayPredictionResults(predictions);
+
+      } catch (err) {
+        console.error("이미지 분석 실패:", err);
+        showToast("이미지를 분석하는 중 오류가 발생했습니다.", "error");
+      } finally {
+        dom.imageScanner.classList.add('hidden');
+        dom.reanalyzeBtn.disabled = false;
+        dom.reanalyzeBtn.innerHTML = '<i class="fa-solid fa-sparkles"></i> 다시 분석';
+      }
+    }
+
+    function handleFileSelect(file) {
+      if (!file || !file.type.startsWith('image/')) {
+        showToast("유효한 이미지 파일(.jpg, .png 등)을 선택해주세요.", "error");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        dom.imagePreview.src = e.target.result;
+        dom.dropPlaceholder.classList.add('hidden');
+        dom.previewContainer.classList.remove('hidden');
+
+        // Predict once image DOM element is ready
+        dom.imagePreview.onload = function() {
+          predictImage(dom.imagePreview);
+        };
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Drag and Drop Events
+    dom.dropZone.addEventListener('click', (e) => {
+      // Don't trigger if clicked on controls
+      if (e.target.closest('#changeImageBtn') || e.target.closest('#reanalyzeBtn')) return;
+      dom.fileInput.click();
+    });
+
+    dom.fileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) {
+        handleFileSelect(e.target.files[0]);
+      }
+    });
+
+    dom.dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dom.dropZone.classList.add('border-brand-600', 'bg-amber-100/40');
+    });
+
+    dom.dropZone.addEventListener('dragleave', () => {
+      dom.dropZone.classList.remove('border-brand-600', 'bg-amber-100/40');
+    });
+
+    dom.dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dom.dropZone.classList.remove('border-brand-600', 'bg-amber-100/40');
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        handleFileSelect(e.dataTransfer.files[0]);
+      }
+    });
+
+    dom.changeImageBtn.addEventListener('click', () => {
+      dom.fileInput.click();
+    });
+
+    dom.reanalyzeBtn.addEventListener('click', () => {
+      if (dom.imagePreview.src) {
+        predictImage(dom.imagePreview);
+      }
+    });
+
+    // Sample Image Buttons
+    document.querySelectorAll('.sample-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const imgUrl = btn.getAttribute('data-src');
+        const breedName = btn.getAttribute('data-label');
+        
+        showToast(`샘플 '${breedName}' 사진을 불러와 분석합니다.`, "info");
+        dom.dropPlaceholder.classList.add('hidden');
+        dom.previewContainer.classList.remove('hidden');
+
+        // Unsplash cross-origin handling
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.src = imgUrl;
+        img.onload = () => {
+          dom.imagePreview.src = imgUrl;
+          predictImage(img);
+        };
+      });
+    });
+
+    // ========================================================
+    // WEBCAM STREAM & REAL-TIME PREDICTION LOGIC
+    // ========================================================
+    let webcamAnimationFrameId = null;
+
+    async function initWebcam() {
+      if (!state.model) {
+        showToast("모델을 먼저 로드하는 중입니다...", "info");
+        await loadTeachableMachineModel();
+        if (!state.model) return;
+      }
+
+      try {
+        dom.startWebcamBtn.disabled = true;
+        dom.startWebcamBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 카메라 연결 중...';
+
+        const width = 360;
+        const height = 360;
+        const flip = state.webcamFlip; // whether to flip the webcam (mirror mode)
+
+        state.webcam = new tmImage.Webcam(width, height, flip);
+        await state.webcam.setup({ facingMode: "user" }); // request camera access
+        await state.webcam.play();
+
+        // Attach canvas to DOM
+        dom.webcamContainer.innerHTML = '';
+        dom.webcamContainer.appendChild(state.webcam.canvas);
+        state.webcam.canvas.className = 'w-full h-auto max-h-[360px] object-cover rounded-xl shadow-md';
+
+        dom.webcamPlaceholder.classList.add('hidden');
+        dom.webcamCanvasWrapper.classList.remove('hidden');
+        dom.webcamControlsBar.classList.remove('hidden');
+
+        state.isWebcamRunning = true;
+        state.isWebcamPaused = false;
+        dom.streamStateLabel.innerText = "일시정지";
+        dom.toggleCameraStreamBtn.querySelector('i').className = "fa-solid fa-pause text-amber-600";
+
+        // Start animation loop
+        webcamLoop();
+        showToast("웹캠 실시간 분석이 시작되었습니다.", "success");
+
+      } catch (err) {
+        console.error("웹캠 실행 실패:", err);
+        showToast("카메라 권한이 거부되었거나 사용 가능한 카메라가 없습니다.", "error");
+      } finally {
+        dom.startWebcamBtn.disabled = false;
+        dom.startWebcamBtn.innerHTML = '<i class="fa-solid fa-play"></i> 카메라 켜기';
+      }
+    }
+
+    let lastPredictTime = 0;
+    async function webcamLoop(timestamp) {
+      if (!state.isWebcamRunning) return;
+
+      if (!state.isWebcamPaused && state.webcam) {
+        state.webcam.update(); // Update webcam frame
+
+        // Throttle predictions to every 120ms to save CPU/GPU resources
+        if (!lastPredictTime || timestamp - lastPredictTime > 120) {
+          lastPredictTime = timestamp;
+          if (state.model) {
+            const predictions = await state.model.predict(state.webcam.canvas);
+            displayPredictionResults(predictions);
+          }
+        }
+      }
+
+      webcamAnimationFrameId = requestAnimationFrame(webcamLoop);
+    }
+
+    function stopWebcam() {
+      if (webcamAnimationFrameId) {
+        cancelAnimationFrame(webcamAnimationFrameId);
+        webcamAnimationFrameId = null;
+      }
+      if (state.webcam) {
+        state.webcam.stop();
+        state.webcam = null;
+      }
+      state.isWebcamRunning = false;
+      state.isWebcamPaused = false;
+
+      dom.webcamCanvasWrapper.classList.add('hidden');
+      dom.webcamControlsBar.classList.add('hidden');
+      dom.webcamPlaceholder.classList.remove('hidden');
+      dom.webcamContainer.innerHTML = '';
+      showToast("카메라 연결이 종료되었습니다.", "info");
+    }
+
+    dom.startWebcamBtn.addEventListener('click', initWebcam);
+    dom.stopWebcamBtn.addEventListener('click', stopWebcam);
+
+    dom.toggleCameraStreamBtn.addEventListener('click', () => {
+      if (!state.webcam) return;
+      state.isWebcamPaused = !state.isWebcamPaused;
+      if (state.isWebcamPaused) {
+        dom.streamStateLabel.innerText = "계속하기";
+        dom.toggleCameraStreamBtn.querySelector('i').className = "fa-solid fa-play text-emerald-600";
+        showToast("실시간 분석을 일시정지했습니다.", "info");
+      } else {
+        dom.streamStateLabel.innerText = "일시정지";
+        dom.toggleCameraStreamBtn.querySelector('i').className = "fa-solid fa-pause text-amber-600";
+        showToast("실시간 분석을 재개합니다.", "info");
+      }
+    });
+
+    dom.flipCameraBtn.addEventListener('click', async () => {
+      state.webcamFlip = !state.webcamFlip;
+      showToast("카메라 좌우 반전을 전환합니다.", "info");
+      stopWebcam();
+      await initWebcam();
+    });
+
+    // ========================================================
+    // TABS SWITCHING
+    // ========================================================
+    dom.tabUploadBtn.addEventListener('click', () => {
+      if (state.activeTab === 'upload') return;
+      state.activeTab = 'upload';
+
+      // UI Tab state
+      dom.tabUploadBtn.className = 'flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all duration-200 bg-white text-brand-800 shadow-sm';
+      dom.tabUploadBtn.querySelector('i').className = 'fa-solid fa-cloud-arrow-up text-brand-600';
+
+      dom.tabWebcamBtn.className = 'flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 text-slate-600 hover:text-brand-800';
+      dom.tabWebcamBtn.querySelector('i').className = 'fa-solid fa-video text-slate-400';
+
+      dom.uploadView.classList.remove('hidden');
+      dom.webcamView.classList.add('hidden');
+
+      // Pause webcam if was running
+      if (state.isWebcamRunning) {
+        stopWebcam();
+      }
+    });
+
+    dom.tabWebcamBtn.addEventListener('click', () => {
+      if (state.activeTab === 'webcam') return;
+      state.activeTab = 'webcam';
+
+      // UI Tab state
+      dom.tabWebcamBtn.className = 'flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all duration-200 bg-white text-brand-800 shadow-sm';
+      dom.tabWebcamBtn.querySelector('i').className = 'fa-solid fa-video text-brand-600';
+
+      dom.tabUploadBtn.className = 'flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 text-slate-600 hover:text-brand-800';
+      dom.tabUploadBtn.querySelector('i').className = 'fa-solid fa-cloud-arrow-up text-slate-400';
+
+      dom.webcamView.classList.remove('hidden');
+      dom.uploadView.classList.add('hidden');
+    });
+
+    // ========================================================
+    // SETTINGS PANEL & URL MANAGEMENT
+    // ========================================================
+    dom.toggleSettingsBtn.addEventListener('click', () => {
+      dom.modelSettingsSection.classList.toggle('hidden');
+    });
+
+    dom.loadModelBtn.addEventListener('click', () => {
+      const inputVal = dom.modelUrlInput.value.trim();
+      loadTeachableMachineModel(inputVal);
+    });
+
+    dom.resetDefaultModelBtn.addEventListener('click', () => {
+      const defaultUrl = "https://teachablemachine.withgoogle.com/models/DqNbyXGwg/";
+      dom.modelUrlInput.value = defaultUrl;
+      loadTeachableMachineModel(defaultUrl);
+    });
+
+    // ========================================================
+    // RESULTS ACTION BUTTONS (Copy & Confetti)
+    // ========================================================
+    dom.copyResultBtn.addEventListener('click', () => {
+      if (!state.lastPredictions || state.lastPredictions.length === 0) return;
+      const top = state.lastPredictions[0];
+      const topInfo = getBreedInfo(top.className);
+      const pct = (top.probability * 100).toFixed(1);
+
+      const copyText = `[PawMatch AI 반려견 품종 분석 결과]
+🐾 1순위 예측: ${topInfo.koName} (${topInfo.enName}) - 일치율 ${pct}%
+📖 특징: ${topInfo.tagline}
+🏷️ 키워드: ${topInfo.tags.join(' ')}
+분석 모델: Google Teachable Machine (DqNbyXGwg)`;
+
+      navigator.clipboard.writeText(copyText).then(() => {
+        showToast("분석 결과가 클립보드에 복사되었습니다!", "success");
+      }).catch(() => {
+        showToast("클립보드 복사에 실패했습니다.", "error");
+      });
+    });
+
+    dom.celebrateBtn.addEventListener('click', triggerConfetti);
+
+    // ========================================================
+    // BREED DIRECTORY MODAL
+    // ========================================================
+    function populateBreedModal() {
+      dom.modalBreedGrid.innerHTML = '';
+      Object.values(BREED_DATABASE).forEach(breed => {
+        const card = document.createElement('div');
+        card.className = 'p-4 rounded-2xl border border-amber-100 bg-amber-50/40 hover:bg-white hover:shadow-md transition-all space-y-2';
+        card.innerHTML = `
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-xl bg-white border border-amber-200 flex items-center justify-center text-2xl shadow-xs">
+              ${breed.emoji}
+            </div>
+            <div>
+              <div class="flex items-baseline gap-1.5">
+                <h4 class="text-sm font-bold text-slate-800">${breed.koName}</h4>
+                <span class="text-xs text-slate-400">(${breed.enName})</span>
+              </div>
+              <p class="text-[11px] text-brand-800 font-semibold">${breed.tagline}</p>
+            </div>
+          </div>
+          <p class="text-xs text-slate-600 leading-relaxed">${breed.description}</p>
+          <div class="flex items-center gap-1.5 flex-wrap pt-1">
+            ${breed.tags.map(t => `<span class="px-2 py-0.5 rounded text-[10px] bg-white border border-amber-200 text-amber-800">${t}</span>`).join('')}
+          </div>
+          <div class="grid grid-cols-3 gap-1 pt-2 border-t border-amber-200/40 text-[10px] text-slate-500">
+            <div>체급: <strong class="text-slate-700">${breed.size.split(' ')[0]}</strong></div>
+            <div>에너지: <strong class="text-slate-700">${breed.energy.split(' ')[0]}</strong></div>
+            <div>털빠짐: <strong class="text-slate-700">${breed.shedding}</strong></div>
+          </div>
+        `;
+        dom.modalBreedGrid.appendChild(card);
+      });
+    }
+
+    dom.openBreedListBtn.addEventListener('click', () => {
+      populateBreedModal();
+      dom.breedModal.classList.remove('hidden');
+    });
+
+    const closeModal = () => dom.breedModal.classList.add('hidden');
+    dom.closeBreedModalBtn.addEventListener('click', closeModal);
+    dom.closeBreedModalBtn2.addEventListener('click', closeModal);
+    dom.breedModal.addEventListener('click', (e) => {
+      if (e.target === dom.breedModal) closeModal();
+    });
+
+    // ========================================================
+    // AUTO INITIALIZATION ON PAGE LOAD
+    // ========================================================
+    window.addEventListener('DOMContentLoaded', () => {
+      // Auto load default Teachable Machine model
+      loadTeachableMachineModel();
+    });
+  </script>
+</body>
+</html>
