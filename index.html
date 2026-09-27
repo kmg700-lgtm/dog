@@ -82,9 +82,9 @@
                   #fdfbf7;
     }
     .glass-card {
-      background: rgba(255, 255, 255, 0.94);
+      background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(12px);
-      border: 1px solid rgba(229, 219, 203, 0.55);
+      border: 1px solid rgba(229, 219, 203, 0.6);
     }
     .preview-scanner-line {
       position: absolute;
@@ -113,7 +113,7 @@
         <div>
           <div class="flex items-center gap-2">
             <span class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-amber-900 via-brand-700 to-amber-600 bg-clip-text text-transparent">PawMatch AI</span>
-            <span class="px-2 py-0.5 text-[11px] font-bold bg-brand-100 text-brand-800 rounded-full border border-brand-200">v2.1</span>
+            <span class="px-2 py-0.5 text-[11px] font-bold bg-brand-100 text-brand-800 rounded-full border border-brand-200">v2.2</span>
           </div>
           <p class="text-xs text-slate-500 hidden sm:block">Teachable Machine 반려견 10대 품종 AI 분류기</p>
         </div>
@@ -268,7 +268,7 @@
               </div>
             </div>
 
-            <!-- Quick Demo Sample Images (6 Breeds Matching Exact Labels) -->
+            <!-- Quick Demo Sample Images (Requested Exact URLs) -->
             <div class="pt-2">
               <div class="flex items-center justify-between mb-2.5">
                 <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
@@ -280,12 +280,12 @@
               <!-- 6 Sample Cards Grid -->
               <div class="grid grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-2.5">
                 
-                <!-- Sample 1: 골든 리트리버 (Golden Retriever) -->
-                <button type="button" class="sample-btn group flex flex-col items-center p-1.5 rounded-2xl border border-amber-200/80 bg-white hover:border-brand-500 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 text-center" 
-                  data-src="https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=600&q=80" 
+                <!-- Sample 1: 골든 리트리버 -->
+                <button type="button" class="sample-btn group flex flex-col items-center p-1.5 rounded-2xl border border-amber-200/80 bg-white hover:border-brand-500 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 text-center cursor-pointer" 
+                  data-src="https://images.unsplash.com/photo-1552053831-71594a27632d?w=400" 
                   data-label="골든 리트리버">
                   <div class="w-full aspect-square overflow-hidden rounded-xl bg-slate-100 mb-1.5 relative shadow-inner">
-                    <img src="https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=300&q=80" 
+                    <img src="https://images.unsplash.com/photo-1552053831-71594a27632d?w=400" 
                       alt="골든 리트리버" 
                       loading="lazy" 
                       class="w-full h-full object-cover group-hover:scale-108 transition-transform duration-300"
@@ -295,27 +295,27 @@
                   <span class="text-[9px] text-slate-400">대형견</span>
                 </button>
 
-                <!-- Sample 2: 푸들 (Poodle) -->
-                <button type="button" class="sample-btn group flex flex-col items-center p-1.5 rounded-2xl border border-amber-200/80 bg-white hover:border-brand-500 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 text-center" 
-                  data-src="https://images.unsplash.com/photo-1591769225440-811ad7d6eab2?auto=format&fit=crop&w=600&q=80" 
+                <!-- Sample 2: 푸들 -->
+                <button type="button" class="sample-btn group flex flex-col items-center p-1.5 rounded-2xl border border-amber-200/80 bg-white hover:border-brand-500 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 text-center cursor-pointer" 
+                  data-src="https://images.unsplash.com/photo-1561037404-61cd46aa615b?w=400" 
                   data-label="푸들">
                   <div class="w-full aspect-square overflow-hidden rounded-xl bg-slate-100 mb-1.5 relative shadow-inner">
-                    <img src="https://images.unsplash.com/photo-1591769225440-811ad7d6eab2?auto=format&fit=crop&w=300&q=80" 
+                    <img src="https://images.unsplash.com/photo-1561037404-61cd46aa615b?w=400" 
                       alt="푸들" 
                       loading="lazy" 
                       class="w-full h-full object-cover group-hover:scale-108 transition-transform duration-300"
                       onerror="this.onerror=null; this.src='https://placehold.co/300x300/fef3c7/b45309?text=Poodle';">
                   </div>
                   <span class="text-[11px] sm:text-xs font-bold text-slate-700 group-hover:text-brand-800 leading-tight">푸들</span>
-                  <span class="text-[9px] text-slate-400">소/중형</span>
+                  <span class="text-[9px] text-slate-400">지능2위</span>
                 </button>
 
-                <!-- Sample 3: 비숑 프리제 (Bichon Frise) -->
-                <button type="button" class="sample-btn group flex flex-col items-center p-1.5 rounded-2xl border border-amber-200/80 bg-white hover:border-brand-500 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 text-center" 
-                  data-src="https://images.unsplash.com/photo-1608096299210-db7e38487075?auto=format&fit=crop&w=600&q=80" 
+                <!-- Sample 3: 비숑 프리제 -->
+                <button type="button" class="sample-btn group flex flex-col items-center p-1.5 rounded-2xl border border-amber-200/80 bg-white hover:border-brand-500 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 text-center cursor-pointer" 
+                  data-src="https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=400" 
                   data-label="비숑 프리제">
                   <div class="w-full aspect-square overflow-hidden rounded-xl bg-slate-100 mb-1.5 relative shadow-inner">
-                    <img src="https://images.unsplash.com/photo-1608096299210-db7e38487075?auto=format&fit=crop&w=300&q=80" 
+                    <img src="https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=400" 
                       alt="비숑 프리제" 
                       loading="lazy" 
                       class="w-full h-full object-cover group-hover:scale-108 transition-transform duration-300"
@@ -325,42 +325,42 @@
                   <span class="text-[9px] text-slate-400">소형견</span>
                 </button>
 
-                <!-- Sample 4: 말티즈 (Maltese - 정확한 화이트 말티즈 사진) -->
-                <button type="button" class="sample-btn group flex flex-col items-center p-1.5 rounded-2xl border border-amber-200/80 bg-white hover:border-brand-500 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 text-center" 
-                  data-src="https://images.unsplash.com/photo-1587974928552-4f4aac51b45d?auto=format&fit=crop&w=600&q=80" 
+                <!-- Sample 4: 말티즈 -->
+                <button type="button" class="sample-btn group flex flex-col items-center p-1.5 rounded-2xl border border-amber-200/80 bg-white hover:border-brand-500 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 text-center cursor-pointer" 
+                  data-src="https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?w=400" 
                   data-label="말티즈">
                   <div class="w-full aspect-square overflow-hidden rounded-xl bg-slate-100 mb-1.5 relative shadow-inner">
-                    <img src="https://images.unsplash.com/photo-1587974928552-4f4aac51b45d?auto=format&fit=crop&w=300&q=80" 
+                    <img src="https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?w=400" 
                       alt="말티즈" 
                       loading="lazy" 
                       class="w-full h-full object-cover group-hover:scale-108 transition-transform duration-300"
                       onerror="this.onerror=null; this.src='https://placehold.co/300x300/fef3c7/b45309?text=Maltese';">
                   </div>
                   <span class="text-[11px] sm:text-xs font-bold text-slate-700 group-hover:text-brand-800 leading-tight">말티즈</span>
-                  <span class="text-[9px] text-slate-400">소형견</span>
+                  <span class="text-[9px] text-slate-400">사랑둥이</span>
                 </button>
 
-                <!-- Sample 5: 불독 (Bulldog - 정확한 불독 사진) -->
-                <button type="button" class="sample-btn group flex flex-col items-center p-1.5 rounded-2xl border border-amber-200/80 bg-white hover:border-brand-500 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 text-center" 
-                  data-src="https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&w=600&q=80" 
+                <!-- Sample 5: 불독 -->
+                <button type="button" class="sample-btn group flex flex-col items-center p-1.5 rounded-2xl border border-amber-200/80 bg-white hover:border-brand-500 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 text-center cursor-pointer" 
+                  data-src="https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400" 
                   data-label="불독">
                   <div class="w-full aspect-square overflow-hidden rounded-xl bg-slate-100 mb-1.5 relative shadow-inner">
-                    <img src="https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&w=300&q=80" 
+                    <img src="https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400" 
                       alt="불독" 
                       loading="lazy" 
                       class="w-full h-full object-cover group-hover:scale-108 transition-transform duration-300"
                       onerror="this.onerror=null; this.src='https://placehold.co/300x300/fef3c7/b45309?text=Bulldog';">
                   </div>
                   <span class="text-[11px] sm:text-xs font-bold text-slate-700 group-hover:text-brand-800 leading-tight">불독</span>
-                  <span class="text-[9px] text-slate-400">중형견</span>
+                  <span class="text-[9px] text-slate-400">순둥이</span>
                 </button>
 
-                <!-- Sample 6: 보더콜리 (Border Collie - 정확한 보더콜리 사진) -->
-                <button type="button" class="sample-btn group flex flex-col items-center p-1.5 rounded-2xl border border-amber-200/80 bg-white hover:border-brand-500 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 text-center" 
-                  data-src="https://images.unsplash.com/photo-1503256207526-0d5d80fa2f47?auto=format&fit=crop&w=600&q=80" 
+                <!-- Sample 6: 보더콜리 -->
+                <button type="button" class="sample-btn group flex flex-col items-center p-1.5 rounded-2xl border border-amber-200/80 bg-white hover:border-brand-500 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 text-center cursor-pointer" 
+                  data-src="https://images.unsplash.com/photo-1503256207526-0d5d80fa2f47?w=400" 
                   data-label="보더콜리">
                   <div class="w-full aspect-square overflow-hidden rounded-xl bg-slate-100 mb-1.5 relative shadow-inner">
-                    <img src="https://images.unsplash.com/photo-1503256207526-0d5d80fa2f47?auto=format&fit=crop&w=300&q=80" 
+                    <img src="https://images.unsplash.com/photo-1503256207526-0d5d80fa2f47?w=400" 
                       alt="보더콜리" 
                       loading="lazy" 
                       class="w-full h-full object-cover group-hover:scale-108 transition-transform duration-300"
@@ -417,7 +417,7 @@
         </div>
       </div>
 
-      <!-- RIGHT COLUMN: Predictions -->
+      <!-- RIGHT COLUMN: Predictions & Feedback -->
       <div class="lg:col-span-6 space-y-4">
         
         <!-- Empty Placeholder -->
@@ -431,11 +431,11 @@
           </p>
         </div>
 
-        <!-- Active Result Card -->
+        <!-- Active Result Card Container -->
         <div id="activeResultCard" class="hidden space-y-4">
           
-          <!-- Top Spotlight Card -->
-          <div class="glass-card rounded-3xl p-6 shadow-xl shadow-amber-900/10 border-2 border-brand-300 relative overflow-hidden">
+          <!-- [CASE 1] 65% 이상: 정상 예측 성공 카드 (Top Rank Spotlight) -->
+          <div id="topRankSuccessCard" class="glass-card rounded-3xl p-6 shadow-xl shadow-amber-900/10 border-2 border-brand-300 relative overflow-hidden transition-all duration-300">
             <div class="flex items-center justify-between mb-4 relative z-10">
               <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-gradient-to-r from-brand-600 to-amber-500 text-white shadow-sm">
                 <i class="fa-solid fa-crown text-yellow-200"></i> AI 1순위 예측 품종
@@ -484,23 +484,62 @@
             </div>
           </div>
 
-          <!-- All Probability Progress Bars -->
+          <!-- [CASE 2] 65% 미만: 강아지 미인식 경고 카드 (Low Confidence Warning) -->
+          <div id="lowConfidenceWarningCard" class="hidden glass-card rounded-3xl p-6 sm:p-7 shadow-xl shadow-amber-900/10 border-2 border-amber-400/90 bg-gradient-to-b from-amber-50/80 via-white to-amber-50/50 transition-all duration-300">
+            <div class="flex items-center gap-3.5 mb-4">
+              <div class="w-13 h-13 rounded-2xl bg-amber-500 text-white flex items-center justify-center text-2xl shadow-md shadow-amber-500/30 flex-shrink-0 animate-bounce-soft">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+              </div>
+              <div>
+                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-300 mb-1">
+                  인식 확률 임계값(65%) 미달
+                </span>
+                <h3 class="text-lg sm:text-xl font-extrabold text-slate-900 leading-tight">
+                  강아지 사진을 인식할 수 없습니다
+                </h3>
+              </div>
+            </div>
+
+            <p class="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium bg-amber-100/50 p-3.5 rounded-xl border border-amber-200">
+              올바른 반려견 사진을 업로드해주세요. 대상이 사람이거나 풍경, 물건이거나, 혹은 강아지의 얼굴과 전신이 가려져 품종 특징을 65% 이상 확신하기 어렵습니다.
+            </p>
+
+            <!-- Guide Checklist -->
+            <div class="mt-4 space-y-2 text-xs text-slate-600 bg-white/80 p-3.5 rounded-xl border border-slate-200">
+              <p class="font-bold text-slate-800 flex items-center gap-1.5 text-xs">
+                <i class="fa-regular fa-lightbulb text-amber-500"></i> 인식 성공을 위한 추천 팁:
+              </p>
+              <ul class="space-y-1 pl-4 list-disc text-slate-600 text-[11px]">
+                <li>강아지의 얼굴과 귀, 털 특징이 화면 중앙에 크게 나오도록 해주세요.</li>
+                <li>어둡거나 흔들린 사진 대신 밝고 선명한 조명의 사진을 추천합니다.</li>
+                <li>좌측 하단의 <strong>[샘플 사진으로 빠른 체험하기]</strong>를 클릭해 즉시 테스트해 보세요.</li>
+              </ul>
+            </div>
+
+            <!-- Current Best Guess Note -->
+            <div class="mt-3.5 flex items-center justify-between text-xs text-slate-500 pt-2 border-t border-amber-200/60">
+              <span>최고 일치 추정치: <strong id="warningSuspectBreed" class="text-amber-800 font-bold">-</strong></span>
+              <span class="font-mono text-amber-700 font-bold">확률: <span id="warningConfidenceValue">0%</span></span>
+            </div>
+          </div>
+
+          <!-- All Probability Progress Bars (Always shown for AI transparency) -->
           <div class="glass-card rounded-3xl p-6 shadow-xl shadow-amber-900/5">
             <div class="flex items-center justify-between mb-4">
               <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
                 <i class="fa-solid fa-chart-simple text-brand-600"></i> 품종별 예측 확률 순위
               </h3>
-              <span class="text-[11px] text-slate-400">Teachable Machine Softmax</span>
+              <span class="text-[11px] text-slate-400">임계값 기준 65%</span>
             </div>
             <div id="probabilityBarsList" class="space-y-3"></div>
           </div>
 
           <!-- Actions -->
           <div class="flex items-center gap-3">
-            <button id="copyResultBtn" class="flex-1 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-amber-50 text-slate-700 hover:text-brand-800 text-xs font-bold shadow-sm transition flex items-center justify-center gap-1.5">
+            <button id="copyResultBtn" class="flex-1 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-amber-50 text-slate-700 hover:text-brand-800 text-xs font-bold shadow-sm transition flex items-center justify-center gap-1.5 cursor-pointer">
               <i class="fa-regular fa-copy"></i> 분석 결과 복사하기
             </button>
-            <button id="celebrateBtn" class="py-2.5 px-4 rounded-xl border border-amber-300 bg-amber-100/70 hover:bg-amber-200 text-brand-900 text-xs font-bold shadow-sm transition flex items-center justify-center gap-1.5">
+            <button id="celebrateBtn" class="py-2.5 px-4 rounded-xl border border-amber-300 bg-amber-100/70 hover:bg-amber-200 text-brand-900 text-xs font-bold shadow-sm transition flex items-center justify-center gap-1.5 cursor-pointer" title="축하 꽃가루 발사">
               🎉 축하하기
             </button>
           </div>
@@ -559,7 +598,7 @@
         <span>Powered by Google Teachable Machine & TensorFlow.js</span>
       </div>
       <div class="text-[11px] text-slate-400">
-        반려견 이미지 분석 모델 (10 Classes Classification) • 프론트엔드 완벽 호환
+        반려견 이미지 분석 모델 (10 Classes Classification) • 65% 신뢰도 임계 필터링 적용
       </div>
     </div>
   </footer>
@@ -568,6 +607,8 @@
   <!-- JAVASCRIPT LOGIC                                         -->
   <!-- ======================================================== -->
   <script>
+    const CONFIDENCE_THRESHOLD = 0.65; // 65% 이상일 때만 강아지 품종 인정
+
     const BREED_DATABASE = {
       "bichon": {
         id: "bichon", koName: "비숑 프리제", enName: "Bichon Frise", emoji: "🐩",
@@ -706,8 +747,14 @@
       streamStateLabel: document.getElementById('streamStateLabel'),
       flipCameraBtn: document.getElementById('flipCameraBtn'),
       stopWebcamBtn: document.getElementById('stopWebcamBtn'),
+      
+      // Result Card & Threshold Elements
       emptyResultCard: document.getElementById('emptyResultCard'),
       activeResultCard: document.getElementById('activeResultCard'),
+      topRankSuccessCard: document.getElementById('topRankSuccessCard'),
+      lowConfidenceWarningCard: document.getElementById('lowConfidenceWarningCard'),
+      warningConfidenceValue: document.getElementById('warningConfidenceValue'),
+      warningSuspectBreed: document.getElementById('warningSuspectBreed'),
       topProbabilityValue: document.getElementById('topProbabilityValue'),
       topBreedEmojiBox: document.getElementById('topBreedEmojiBox'),
       topBreedKoName: document.getElementById('topBreedKoName'),
@@ -721,6 +768,8 @@
       probabilityBarsList: document.getElementById('probabilityBarsList'),
       copyResultBtn: document.getElementById('copyResultBtn'),
       celebrateBtn: document.getElementById('celebrateBtn'),
+
+      // Modal & Toast
       openBreedListBtn: document.getElementById('openBreedListBtn'),
       breedModal: document.getElementById('breedModal'),
       modalBreedGrid: document.getElementById('modalBreedGrid'),
@@ -741,6 +790,9 @@
       } else if (type === 'info') {
         dom.toast.className = 'fixed bottom-6 right-6 z-50 transform translate-y-0 opacity-100 transition-all duration-300 flex items-center gap-2 px-4 py-3 rounded-2xl shadow-xl text-xs font-bold text-white bg-slate-900 border border-slate-700';
         dom.toastIcon.className = 'fa-solid fa-circle-info text-brand-400';
+      } else if (type === 'warning') {
+        dom.toast.className = 'fixed bottom-6 right-6 z-50 transform translate-y-0 opacity-100 transition-all duration-300 flex items-center gap-2 px-4 py-3 rounded-2xl shadow-xl text-xs font-bold text-slate-900 bg-amber-400 border border-amber-300';
+        dom.toastIcon.className = 'fa-solid fa-triangle-exclamation text-slate-900';
       } else {
         dom.toast.className = 'fixed bottom-6 right-6 z-50 transform translate-y-0 opacity-100 transition-all duration-300 flex items-center gap-2 px-4 py-3 rounded-2xl shadow-xl text-xs font-bold text-white bg-emerald-700 border border-emerald-600';
         dom.toastIcon.className = 'fa-solid fa-circle-check text-white';
@@ -819,57 +871,91 @@
       const topInfo = getBreedInfo(top.className);
       const topPct = (top.probability * 100).toFixed(1);
 
+      // Hide initial empty card, show active container
       dom.emptyResultCard.classList.add('hidden');
       dom.activeResultCard.classList.remove('hidden');
 
-      dom.topProbabilityValue.innerText = topPct;
-      dom.topBreedEmojiBox.innerText = topInfo.emoji;
-      dom.topBreedKoName.innerText = topInfo.koName;
-      dom.topBreedEnName.innerText = topInfo.enName;
-      dom.topBreedTagline.innerText = `"${topInfo.tagline}"`;
-      dom.topBreedDescription.innerText = topInfo.description;
-      dom.statSize.innerText = topInfo.size;
-      dom.statEnergy.innerText = topInfo.energy;
-      dom.statShedding.innerText = topInfo.shedding;
+      // Check 65% Confidence Threshold
+      if (top.probability < CONFIDENCE_THRESHOLD) {
+        // [CASE 1] 65% 미만인 경우: 경고 카드 노출, 정상 스포트라이트 카드 숨김
+        dom.topRankSuccessCard.classList.add('hidden');
+        dom.lowConfidenceWarningCard.classList.remove('hidden');
 
-      dom.topBreedTags.innerHTML = '';
-      topInfo.tags.forEach(tag => {
-        const tagSpan = document.createElement('span');
-        tagSpan.className = 'px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-100/90 text-amber-900 border border-amber-200';
-        tagSpan.innerText = tag;
-        dom.topBreedTags.appendChild(tagSpan);
-      });
+        dom.warningConfidenceValue.innerText = `${topPct}%`;
+        dom.warningSuspectBreed.innerText = `${topInfo.koName} (${topInfo.enName})`;
 
+        if (state.activeTab === 'upload') {
+          showToast("강아지 사진을 인식할 수 없습니다. (최고 확률 65% 미만)", "warning");
+        }
+      } else {
+        // [CASE 2] 65% 이상인 경우: 정상 견종 카드 노출, 경고 카드 숨김
+        dom.lowConfidenceWarningCard.classList.add('hidden');
+        dom.topRankSuccessCard.classList.remove('hidden');
+
+        dom.topProbabilityValue.innerText = topPct;
+        dom.topBreedEmojiBox.innerText = topInfo.emoji;
+        dom.topBreedKoName.innerText = topInfo.koName;
+        dom.topBreedEnName.innerText = topInfo.enName;
+        dom.topBreedTagline.innerText = `"${topInfo.tagline}"`;
+        dom.topBreedDescription.innerText = topInfo.description;
+        dom.statSize.innerText = topInfo.size;
+        dom.statEnergy.innerText = topInfo.energy;
+        dom.statShedding.innerText = topInfo.shedding;
+
+        dom.topBreedTags.innerHTML = '';
+        topInfo.tags.forEach(tag => {
+          const tagSpan = document.createElement('span');
+          tagSpan.className = 'px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-100/90 text-amber-900 border border-amber-200';
+          tagSpan.innerText = tag;
+          dom.topBreedTags.appendChild(tagSpan);
+        });
+
+        if (top.probability > 0.85 && state.activeTab === 'upload') {
+          triggerConfetti();
+        }
+      }
+
+      // Render All 10 Class Probability Progress Bars
       dom.probabilityBarsList.innerHTML = '';
       sorted.forEach((item, index) => {
         const info = getBreedInfo(item.className);
         const pct = (item.probability * 100).toFixed(1);
         const isTop = index === 0;
+        const meetsThreshold = isTop && top.probability >= CONFIDENCE_THRESHOLD;
 
         const row = document.createElement('div');
-        row.className = `p-2.5 rounded-xl transition-all ${isTop ? 'bg-amber-100/60 border border-amber-300' : 'bg-slate-50/70 border border-slate-100 hover:bg-amber-50/40'}`;
+        row.className = `p-2.5 rounded-xl transition-all ${
+          meetsThreshold 
+            ? 'bg-amber-100/60 border border-amber-300' 
+            : isTop 
+              ? 'bg-amber-50/50 border border-dashed border-amber-300' 
+              : 'bg-slate-50/70 border border-slate-100 hover:bg-amber-50/40'
+        }`;
+
         row.innerHTML = `
           <div class="flex items-center justify-between text-xs mb-1.5">
             <div class="flex items-center gap-1.5 truncate">
-              <span class="w-5 text-center font-bold ${isTop ? 'text-amber-700' : 'text-slate-400'}">${index + 1}</span>
+              <span class="w-5 text-center font-bold ${isTop ? (meetsThreshold ? 'text-amber-700' : 'text-amber-600') : 'text-slate-400'}">${index + 1}</span>
               <span class="text-sm">${info.emoji}</span>
               <span class="font-bold ${isTop ? 'text-slate-900' : 'text-slate-700'}">${info.koName}</span>
               <span class="text-[11px] text-slate-400 hidden sm:inline">(${info.enName})</span>
             </div>
             <div class="flex items-center gap-1 font-mono">
-              <span class="font-extrabold ${isTop ? 'text-brand-700 text-sm' : 'text-slate-700'}">${pct}%</span>
+              <span class="font-extrabold ${isTop ? (meetsThreshold ? 'text-brand-700 text-sm' : 'text-amber-700 text-sm') : 'text-slate-700'}">${pct}%</span>
             </div>
           </div>
           <div class="w-full h-2.5 bg-slate-200/80 rounded-full overflow-hidden">
-            <div class="h-full rounded-full transition-all duration-700 ease-out ${isTop ? 'bg-gradient-to-r from-brand-500 to-amber-500 shadow-sm' : 'bg-slate-400/80'}" style="width: ${pct}%"></div>
+            <div class="h-full rounded-full transition-all duration-700 ease-out ${
+              meetsThreshold 
+                ? 'bg-gradient-to-r from-brand-500 to-amber-500 shadow-sm' 
+                : isTop 
+                  ? 'bg-amber-400' 
+                  : 'bg-slate-400/80'
+            }" style="width: ${pct}%"></div>
           </div>
         `;
         dom.probabilityBarsList.appendChild(row);
       });
-
-      if (top.probability > 0.85 && state.activeTab === 'upload') {
-        triggerConfetti();
-      }
     }
 
     function triggerConfetti() {
@@ -894,7 +980,7 @@
         dom.reanalyzeBtn.disabled = true;
         dom.reanalyzeBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> 분석 중...';
         
-        // Ensure image is fully loaded before prediction
+        // Ensure image element is loaded
         if (!imgElement.complete || imgElement.naturalWidth === 0) {
           await new Promise((resolve, reject) => {
             imgElement.onload = resolve;
@@ -956,12 +1042,12 @@
       if (dom.imagePreview.src) predictImage(dom.imagePreview);
     });
 
-    // Sample Image Click Handling (Exact match & reliable prediction)
+    // Sample Image Click Handling (Exact URLs + Instant Prediction)
     document.querySelectorAll('.sample-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
 
-        // Highlight active sample button
+        // 1. Highlight clicked sample button
         document.querySelectorAll('.sample-btn').forEach(b => b.classList.remove('ring-2', 'ring-brand-500', 'bg-amber-50'));
         btn.classList.add('ring-2', 'ring-brand-500', 'bg-amber-50');
 
@@ -969,17 +1055,25 @@
         const breedName = btn.getAttribute('data-label');
         showToast(`샘플 '${breedName}' 사진을 불러와 AI 분석을 시작합니다.`, "info");
         
+        // 2. Reveal preview container
         dom.dropPlaceholder.classList.add('hidden');
         dom.previewContainer.classList.remove('hidden');
 
-        // Set anonymous crossOrigin to avoid canvas tainting
+        // 3. Reset image handlers & set anonymous CORS
+        dom.imagePreview.onload = null;
+        dom.imagePreview.onerror = null;
         dom.imagePreview.crossOrigin = "anonymous";
-        dom.imagePreview.src = imgUrl;
 
-        // Trigger prediction when image loads or if already loaded
         dom.imagePreview.onload = () => {
           predictImage(dom.imagePreview);
         };
+        dom.imagePreview.onerror = () => {
+          showToast("샘플 이미지를 불러오지 못했습니다.", "error");
+        };
+
+        dom.imagePreview.src = imgUrl;
+
+        // 4. Trigger immediately if already cached in browser
         if (dom.imagePreview.complete && dom.imagePreview.naturalWidth > 0) {
           predictImage(dom.imagePreview);
         }
@@ -1118,6 +1212,12 @@
       const top = state.lastPredictions[0];
       const topInfo = getBreedInfo(top.className);
       const pct = (top.probability * 100).toFixed(1);
+
+      if (top.probability < CONFIDENCE_THRESHOLD) {
+        showToast("인식 확률이 65% 미만이어서 결과를 복사할 수 없습니다.", "warning");
+        return;
+      }
+
       const copyText = `[PawMatch AI 반려견 품종 분석 결과]
 🐾 1순위 예측: ${topInfo.koName} (${topInfo.enName}) - 일치율 ${pct}%
 📖 특징: ${topInfo.tagline}
